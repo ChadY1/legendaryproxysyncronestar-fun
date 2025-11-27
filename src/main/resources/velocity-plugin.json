@@ -1,0 +1,9 @@
+{
+  "id": "starfuncore",
+  "name": "StarfunCore",
+  "version": "1.0.0",
+  "description": "Noyau proxy Starfun (messagerie securisee entre proxy et hubs).",
+  "authors": ["Starfun"],
+  "dependencies": [],
+  "main": "gg.starfun.proxy.StarfunCoreVelocity"
+}
