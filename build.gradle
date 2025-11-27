@@ -38,12 +38,16 @@ java {
 }
 
 shadowJar {
-    archiveClassifier.set('')
     minimize {
         exclude(dependency('com.velocitypowered:velocity-api:3.2.0'))
     }
 }
 
+tasks.named('jar') {
+    archiveClassifier.set('plain')
+}
+
 tasks.build {
     dependsOn tasks.shadowJar
+    dependsOn tasks.jar
 }
