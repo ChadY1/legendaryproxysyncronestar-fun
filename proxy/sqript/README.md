@@ -13,5 +13,7 @@ Scripts fournis :
 - `police_ops.sq` : interactions policières (menottes, sirènes, alertes).
 - `medic_ops.sq` : trousse médicale, défibrillateur, stabilisation de blessés.
 - `gui_star_life.sq` : GUIs StarLife RP (ATM complet, virements, pompe à essence, assurance véhicule, terminaux police/médic/militaire, passeport) avec les textures PNG décrites dans `../assets/gui/README.md`.
+- `starliferp_core.sq` : reprise du bundle iRP (chat RP/HRP/radio, menottes, fouille, PV électroniques) avec toutes les commandes et préfixes renommés en `/slr...` pour StarLifeRP.
+- `starliferp_jobs.sq` : métiers simplifiés façon iRP (bucheron/mineur) avec atelier `/slratelier` et kit `/slrjobkit` limitant les erreurs sur 1.7.10.
 
 Documentation officielle : https://sqript.github.io/ (miroir communautaire)

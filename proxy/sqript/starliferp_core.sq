@@ -1,0 +1,157 @@
+# StarLifeRP Core (adapté depuis Rubylium/iRP)
+# - Chat RP/HRP/local radio
+# - Renommage commandes iRP -> SLR/StarLifeRP
+# - Fouille/menottes améliorées avec messages propres
+# - Aide contextualisée
+
+options:
+    slr_prefix: &7[&bStarLifeRP&7]
+    slr_local_radius: 20
+    slr_radio_permission: slr.radio
+    slr_police_permission: slr.police
+    slr_moderator_permission: slr.staff
+    slr_help_title: &7—— &bAide StarLifeRP &7——
+    slr_cuff_item: &6StarLife Menottes
+    slr_search_item: &6StarLife Baton
+    slr_fine_item: &6PV Electronique
+
+on load:
+    broadcast "{@slr_prefix} &aModule StarLifeRP core chargé (chat, fouille, aide)."
+
+on join:
+    if {slr.chat.%player%} is not set:
+        set {slr.chat.%player%} to "local"
+    if {slr.nick.%player%} is not set:
+        set {slr.nick.%player%} to player
+    send "{@slr_prefix} &7Bienvenue &f%{slr.nick.%player%}%&7. Utilise &b/slrhelp &7pour voir les commandes RP." to player
+
+command /slrchat [<text>]:
+    permission: slr.chat
+    trigger:
+        if arg 1 is "hrp" or arg 1 is "ooc":
+            set {slr.chat.%player%} to "hrp"
+            message "{@slr_prefix} &aChat HRP activé."
+        else if arg 1 is "radio":
+            if player has permission "{@slr_radio_permission}":
+                set {slr.chat.%player%} to "radio"
+                message "{@slr_prefix} &aRadio RP activée."
+            else:
+                message "{@slr_prefix} &cAccès radio refusé."
+        else:
+            set {slr.chat.%player%} to "local"
+            message "{@slr_prefix} &aChat local activé ( {@slr_local_radius} blocs )."
+
+command /slrname <text>:
+    aliases: /starliferpname
+    permission: slr.name
+    trigger:
+        set {slr.nick.%player%} to arg 1
+        message "{@slr_prefix} &aTon identité RP est maintenant &f%arg 1%"
+
+command /slrhelp:
+    trigger:
+        send "{@slr_help_title}" to player
+        send " &bCommunication:&7 /slrchat <local/hrp/radio>, /slrname <nom>" to player
+        send " &bPolice:&7 baton=%{@slr_search_item}%, menottes=%{@slr_cuff_item}%" to player
+        send " &bAmendes:&7 clic droit avec %{@slr_fine_item}% ou /slrfine <joueur> <montant> <raison>" to player
+        send " &bPasseport:&7 voir GUI StarLife (menu principal)." to player
+        send " &bSupport:&7 /help reste disponible pour les commandes plugins." to player
+
+on chat:
+    set {_mode} to {slr.chat.%player%}
+    if {_mode} is "hrp":
+        cancel event
+        loop all players:
+            message "&7[HRP] &f%{slr.nick.%player%}%&7: &f%message%" to loop-player
+    else if {_mode} is "radio":
+        cancel event
+        if player has permission "{@slr_radio_permission}":
+            loop all players:
+                if loop-player has permission "{@slr_radio_permission}":
+                    message "&3[Radio] &f%{slr.nick.%player%}%&7: &f%message%" to loop-player
+        else:
+            message "{@slr_prefix} &cAccès radio refusé, retour au chat local."
+            set {slr.chat.%player%} to "local"
+    else:
+        cancel event
+        loop players in radius {@slr_local_radius} of location of player:
+            message "&a[RP] &f%{slr.nick.%player%}%&7: &f%message%" to loop-player
+
+# Fouille et menottes modernisées
+on right click on a player:
+    if player's tool is a stick named "{@slr_search_item}":
+        if player has permission "{@slr_police_permission}":
+            open the targeted player's inventory for the player
+            send "{@slr_prefix} &bInspection de &f%targeted player%" to player
+            send "{@slr_prefix} &7Un agent vous fouille..." to targeted player
+        else:
+            send "{@slr_prefix} &cTu n'as pas le badge requis." to player
+
+on rightclick with any item:
+    if name of tool is "{@slr_cuff_item}":
+        if targeted entity is a player:
+            if player has permission "{@slr_police_permission}":
+                if {slr.cuffed.%targeted player%} is not set:
+                    set {slr.cuffed.%targeted player%} to true
+                    apply slowness 10 to targeted player for 999 days
+                    apply weakness 10 to targeted player for 999 days
+                    send "{@slr_prefix} &cTu es menotté par %player%." to targeted player
+                    send "{@slr_prefix} &a%targeted player% &7est menotté." to player
+                else:
+                    delete {slr.cuffed.%targeted player%}
+                    remove slowness from targeted player
+                    remove weakness from targeted player
+                    send "{@slr_prefix} &aTu es libéré." to targeted player
+                    send "{@slr_prefix} &7%targeted player% libéré." to player
+            else:
+                send "{@slr_prefix} &cBadge policier requis." to player
+
+command /slruncuff <player>:
+    permission: {@slr_police_permission}
+    trigger:
+        if {slr.cuffed.%arg 1%} is set:
+            delete {slr.cuffed.%arg 1%}
+            remove slowness from arg 1
+            remove weakness from arg 1
+            message "{@slr_prefix} &a%arg 1% libéré."
+            message "{@slr_prefix} &aTu es libéré par %player%." to arg 1
+        else:
+            message "{@slr_prefix} &7Aucune menotte active." to player
+
+# PV électroniques / amendes rapides
+command /slrfine <player> <number> <text>:
+    permission: {@slr_police_permission}
+    trigger:
+        if arg-2 < 1:
+            message "{@slr_prefix} &cMontant invalide." to player
+            stop trigger
+        set {_target} to arg-1
+        set {_amount} to arg-2
+        set {_reason} to arg-3
+        message "{@slr_prefix} &ePV: &f%{slr.nick.%{_target}%}% &7reçoit &c%{_amount}%$ &7pour &f%{_reason}%" to player
+        message "{@slr_prefix} &cVous recevez une amende de %player%: %{_amount}%$ pour %{_reason}%" to {_target}
+        set {slr.fines::%{_target}%} to {slr.fines::%{_target}%} + {_amount}
+
+# Interaction avec l'item PV
+on right click with paper:
+    if name of tool is "{@slr_fine_item}":
+        if player has permission "{@slr_police_permission}":
+            if targeted entity is a player:
+                if {slr.fines::%targeted player%} is not set:
+                    set {slr.fines::%targeted player%} to 0
+                open chest with 1 rows named "&cPV • %targeted player%" to player
+                wait 1 tick
+                format gui slot 0 of player with red stained glass pane named "&cVoir total" with lore "&7Total dû : %{slr.fines::%targeted player%}%$" to do nothing
+                format gui slot 8 of player with paper named "&aRéinitialiser" with lore "&7Remet le compteur à 0" to run:
+                    set {slr.fines::%targeted player%} to 0
+                    send "{@slr_prefix} &aCompteur remis à zéro pour %targeted player%." to player
+        else:
+            send "{@slr_prefix} &cPV réservé aux forces de l'ordre." to player
+
+# Commande admin rapide
+command /slrresetnick <player>:
+    permission: {@slr_moderator_permission}
+    trigger:
+        delete {slr.nick.%arg 1%}
+        message "{@slr_prefix} &7Nom RP de %arg 1% réinitialisé."
+        message "{@slr_prefix} &7Ton identité RP a été réinitialisée par %player%." to arg 1
