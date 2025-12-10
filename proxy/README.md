@@ -1,6 +1,6 @@
 # ProxyForge + Mohist 1.7.10 (RolePlay/Moddé/Plugins)
 
-Ce dossier fournit un plan de configuration automatisable pour un réseau ProxyForge / Velocity au-dessus d'une instance Mohist 1.7.10 orientée roleplay. Les fichiers sont pensés pour être préremplis par les pipelines CI/CD et complétés par le script `autofix.sh`.
+Ce dossier fournit un plan de configuration automatisable pour un réseau ProxyForge / Velocity au-dessus d'une instance Mohist 1.7.10 orientée roleplay. Les fichiers sont pensés pour être préremplis par les pipelines CI/CD et complétés par le script `autofix.sh` (ou `autofix.bat` sous Windows).
 
 ## Architecture proposée
 - **Proxy Velocity/ProxyForge** : Proxy sécurisé recevant StarfunCore Velocity et redirigeant vers Mohist.
@@ -32,10 +32,11 @@ La liste complète est dans `mods.list`. Inclure les dépendances officielles de
 - Utilise des ACL au niveau du système pour bloquer les ports non utilisés.
 
 ## Automatisation
-1. Lance `./proxy/autofix.sh` pour créer l'arborescence standard (mods, plugins, config) et injecter les templates de config.
-2. Fournis les artefacts (mods/plugins) via un miroir interne ou un stockage S3 ; le script peut consommer la variable `MOD_MIRROR_BASE` pour télécharger les fichiers listés dans `mods.list` si tu ajoutes les URLs.
-3. Vérifie les empreintes SHA-256 via la table `proxy/config/checksums.sha256` (à compléter dans ta chaîne CI) avant de déployer.
-4. Déploie le JAR StarfunCore Velocity sur le proxy et vérifie la présence de la clé AES et du `forwarding-secret`.
+1. Lance `./proxy/autofix.sh` pour créer l'arborescence standard (mods, plugins, maps, config) et injecter les templates de config. Sous Windows, `autofix.bat` réalise les mêmes étapes (Invoke-WebRequest) avec les mêmes variables d'environnement.
+2. Fournis les artefacts (mods/plugins/maps) via un miroir interne ou un stockage S3 ; le script consomme `MOD_MIRROR_BASE`, `PLUGIN_MIRROR_BASE` et `MAP_MIRROR_BASE` pour télécharger automatiquement les fichiers listés dans `mods.list`, `plugins.list` et `maps.list` si tu ajoutes les URLs. Plusieurs URLs publiques sont pré-renseignées (Skript, LuckPerms, Flan's packs, TooManyItems, SecurityCraft, etc.) pour faciliter les tests connectés.
+3. Le workflow GitHub Actions `.github/workflows/proxy-autostart.yml` simule ce bootstrap en CI (checkout, exécution d'`autofix.sh`, téléchargement et inventaire des artefacts prêts à déployer).
+4. Vérifie les empreintes SHA-256 via la table `proxy/config/checksums.sha256` (à compléter dans ta chaîne CI) avant de déployer.
+5. Déploie le JAR StarfunCore Velocity sur le proxy et vérifie la présence de la clé AES et du `forwarding-secret`.
 
 ## Comment utiliser ce dossier
 - **CI/CD** : copie `proxy/` dans ton artifact et complète `config/security.md`, `config/checksums.sha256` et la clé AES.
