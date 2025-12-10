@@ -39,7 +39,8 @@ Le dossier `proxy/` fournit des fichiers prêts à automatiser pour un réseau P
 
 ```bash
 ./proxy/autofix.sh
-# Puis pousser les mods/plugins depuis votre miroir privé et compléter les checksums
+# Puis pousser les mods/plugins/maps depuis votre miroir privé et compléter les checksums
 ```
 
-Assure-toi que la clé AES `starfun:core` et le `forwarding-secret` ProxyForge/Velocity sont renseignés avant de déployer.
+- Un workflow GitHub Actions (`.github/workflows/proxy-autostart.yml`) est fourni pour simuler le bootstrap CI : il lance `autofix.sh` et télécharge automatiquement les mods/plugins/maps si les variables `MOD_MIRROR_BASE`, `PLUGIN_MIRROR_BASE` et `MAP_MIRROR_BASE` sont fournies en secrets.
+- Assure-toi que la clé AES `starfun:core` et le `forwarding-secret` ProxyForge/Velocity sont renseignés avant de déployer.

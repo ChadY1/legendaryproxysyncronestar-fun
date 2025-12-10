@@ -1,0 +1,5 @@
+# Plugins Velocity/ProxyForge recommandés pour l'instance frontale (format: nom[.jar] [url])
+# Exemples avec URL directe (facultatif si PLUGIN_MIRROR_BASE est défini) :
+# fastlogin-1.0.0 https://example.com/fastlogin-1.0.0.jar
+# limboapi-1.0.0
+# Veille à respecter les licences et à fournir des builds compatibles 1.7.10/Proxy Velocity.

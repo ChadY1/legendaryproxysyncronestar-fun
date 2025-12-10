@@ -1,0 +1,3 @@
+# Cartes ou hubs préconfigurés (format: nom_fichier[.zip] [url])
+# Exemple: lobby.zip https://example.com/lobby.zip
+# Si aucune URL n'est fournie, le script utilisera MAP_MIRROR_BASE.
