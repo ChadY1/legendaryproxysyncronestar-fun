@@ -2,6 +2,8 @@
 
 Plugin Velocity fournissant le noyau StarfunCore (messagerie sécurisée entre le proxy Velocity et les hubs Spigot/Folia) via le canal plugin messaging `starfun:core`.
 
+Ce dépôt inclut désormais un dossier `proxy/` prêt à être automatisé pour un réseau ProxyForge/Velocity en frontal d'un serveur Mohist 1.7.10 (RolePlay + Moddé + Plugins). Les templates livrés permettent de sécuriser le proxy, préparer les mods et offrir un script d'« autofix » pour générer l'arborescence par défaut.
+
 ## Configuration
 
 1. Génère une clé AES partagée (128/192/256 bits) en Base64, par exemple :
@@ -20,6 +22,24 @@ Le projet utilise Gradle + Shadow pour produire un JAR prêt à l'emploi. Utilis
 
 ```bash
 gradle build
-```
+ ```
 
 Le JAR final est généré dans `build/libs/StarfunCoreVelocity-1.0.0.jar`.
+
+## Plan Proxy/Mohist (1.7.10 RolePlay + Moddé)
+
+Le dossier `proxy/` fournit des fichiers prêts à automatiser pour un réseau ProxyForge/Velocity + Mohist 1.7.10 :
+
+- `proxy/autofix.sh` : crée l'arborescence (mods, plugins, config), copie les templates et peut télécharger les mods listés dans `proxy/mods.list` via la variable d'environnement `MOD_MIRROR_BASE`.
+- `proxy/templates/mohist-server.properties` : base sécurisée pour Mohist (motd, whitelist, etc.).
+- `proxy/config/security.md` et `proxy/config/checksums.sha256` : à compléter dans votre CI avec les secrets et empreintes.
+- `proxy/mods.list` : liste des mods recommandés (ArmaMania, Decocraft, Dynamic Surroundings, Flan's Mod + packs, ArchitectureCraft, Carpenter's Blocks, TubeTransports...).
+
+### Usage rapide
+
+```bash
+./proxy/autofix.sh
+# Puis pousser les mods/plugins depuis votre miroir privé et compléter les checksums
+```
+
+Assure-toi que la clé AES `starfun:core` et le `forwarding-secret` ProxyForge/Velocity sont renseignés avant de déployer.
