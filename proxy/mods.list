@@ -1,18 +1,20 @@
 # Mods Mohist 1.7.10 (nom[.jar] url)
-ArmaManiaMod1.7.10
-Decocraft
-MrCrayfishsFurnitureMod
-RoadStuff
-DynamicSurroundings
-GlibysVoiceChat
+# Les URLs pointent vers des miroirs publics (ForgeCDN ou GitHub). Elles peuvent être remplacées par vos miroirs internes via
+# MOD_MIRROR_BASE.
+ArmaManiaMod1.7.10 https://raw.githubusercontent.com/ChadY1/legendaryproxysyncronestar-fun/main/proxy/downloads/ArmaManiaMod1.7.10.jar
+Decocraft https://edge.forgecdn.net/files/2395/489/Decocraft-2.4.3_1.7.10.jar
+MrCrayfishsFurnitureMod https://edge.forgecdn.net/files/2219/694/MrCrayfishFurnitureModv3.4.8(1.7.10).jar
+RoadStuff https://edge.forgecdn.net/files/2296/790/roadstuff-mc1.7.10-0.1.4.jar
+DynamicSurroundings https://edge.forgecdn.net/files/2256/858/DynamicSurroundings-1.7.10-1.0.6.4.jar
+GlibysVoiceChat https://edge.forgecdn.net/files/2261/452/GlibysVC-1.7.10-9.1.jar
 FlansMod https://github.com/FlansModsTeam/FlansMod/releases/download/v5.6/Flans.Mod-1.7.10.jar
 FlansMod-ContentPack-Vehicles https://github.com/FlansModsTeam/FlansMod/releases/download/v5.6/Flans.Mod-Vehicles-ContentPack.jar
 FlansMod-ContentPack-Guns https://github.com/FlansModsTeam/FlansMod/releases/download/v5.6/Flans.Mod-Modern-Weapons-ContentPack.jar
 FlansMod-ContentPack-Base https://github.com/FlansModsTeam/FlansMod/releases/download/v5.6/Flans.Mod-Simple-Parts-ContentPack.jar
-ArchitectureCraft
-CarpentersBlocks
-TubeTransports
+ArchitectureCraft https://edge.forgecdn.net/files/2286/391/architecturecraft-1.7.10-1.5.3.jar
+CarpentersBlocks https://edge.forgecdn.net/files/2268/56/Carpenter's%20Blocks%20v3.3.8%20-%20MC%201.7.10.jar
+TubeTransports https://edge.forgecdn.net/files/2299/813/TubeTransportSystem-1.0.0.jar
 TooManyItems https://edge.forgecdn.net/files/2241/559/TooManyItems2014_07_15_1.7.10_Forge.jar
-HouseManagement
+HouseManagement https://raw.githubusercontent.com/ChadY1/legendaryproxysyncronestar-fun/main/proxy/downloads/HouseManagement-1.7.10.jar
 SecurityCraft https://edge.forgecdn.net/files/2267/819/%5B1.7.10%5DSecurityCraftv1.8.12.1.jar
-SQriptMod
+SQriptMod https://github.com/Syst3ms/SQript/releases/download/v1.0.11/SQript-1.0.11.jar

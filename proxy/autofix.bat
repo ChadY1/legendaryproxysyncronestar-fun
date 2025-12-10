@@ -7,6 +7,7 @@ set CONFIG=%ROOT%\config
 set MODS=%ROOT%\mods
 set PLUGINS=%ROOT%\plugins
 set MAPS=%ROOT%\maps
+set GUI_ASSETS=%ROOT%\assets\gui
 set DOWNLOADS=%ROOT%\downloads
 set TEMPLATES=%ROOT%\templates
 
@@ -14,6 +15,7 @@ if not exist "%CONFIG%" mkdir "%CONFIG%"
 if not exist "%MODS%" mkdir "%MODS%"
 if not exist "%PLUGINS%" mkdir "%PLUGINS%"
 if not exist "%MAPS%" mkdir "%MAPS%"
+if not exist "%GUI_ASSETS%" mkdir "%GUI_ASSETS%"
 if not exist "%DOWNLOADS%" mkdir "%DOWNLOADS%"
 if not exist "%ROOT%\logs" mkdir "%ROOT%\logs"
 
@@ -21,14 +23,18 @@ call :copy_if_absent "%TEMPLATES%\mohist-server.properties" "%CONFIG%\server.pro
 call :copy_if_absent "%ROOT%\mods.list" "%MODS%\manifest.txt"
 call :copy_if_absent "%ROOT%\plugins.list" "%PLUGINS%\manifest.txt"
 call :copy_if_absent "%ROOT%\maps.list" "%MAPS%\manifest.txt"
+call :copy_if_absent "%ROOT%\assets\gui.list" "%GUI_ASSETS%\manifest.txt"
 
 set MOD_MIRROR_BASE=%MOD_MIRROR_BASE%
 set PLUGIN_MIRROR_BASE=%PLUGIN_MIRROR_BASE%
 set MAP_MIRROR_BASE=%MAP_MIRROR_BASE%
+set GUI_ASSET_BASE=%GUI_ASSET_BASE%
+if "%GUI_ASSET_BASE%"=="" set GUI_ASSET_BASE=https://raw.githubusercontent.com/ChadY1/legendaryproxysyncronestar-fun/main/proxy/assets/gui
 
 call :download_from_list "%ROOT%\mods.list" "%MODS%" "%MOD_MIRROR_BASE%" .jar
 call :download_from_list "%ROOT%\plugins.list" "%PLUGINS%" "%PLUGIN_MIRROR_BASE%" .jar
 call :download_from_list "%ROOT%\maps.list" "%MAPS%" "%MAP_MIRROR_BASE%" ""
+call :download_from_list "%ROOT%\assets\gui.list" "%GUI_ASSETS%" "%GUI_ASSET_BASE%" .png
 
 if not exist "%CONFIG%\checksums.sha256" (
   echo # Renseigner ici les SHA-256 des mods/plugins (une ligne: ^<sha256^>  ^<chemin^>)>"%CONFIG%\checksums.sha256"

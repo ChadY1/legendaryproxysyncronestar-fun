@@ -6,6 +6,7 @@ CONFIG="$ROOT/config"
 MODS="$ROOT/mods"
 PLUGINS="$ROOT/plugins"
 MAPS="$ROOT/maps"
+GUI_ASSETS="$ROOT/assets/gui"
 DOWNLOADS="$ROOT/downloads"
 TEMPLATES="$ROOT/templates"
 
@@ -86,6 +87,7 @@ download_from_list() {
 }
 
 mkdir -p "$CONFIG" "$MODS" "$PLUGINS" "$MAPS" "$DOWNLOADS" "$ROOT/logs"
+mkdir -p "$GUI_ASSETS"
 
 # Copie le template server.properties s'il n'existe pas déjà
 if [ -f "$TEMPLATES/mohist-server.properties" ]; then
@@ -108,10 +110,15 @@ if [ -f "$ROOT/maps.list" ]; then
   cp "$ROOT/maps.list" "$MAPS/manifest.txt"
 fi
 
+if [ -f "$ROOT/assets/gui.list" ]; then
+  cp "$ROOT/assets/gui.list" "$GUI_ASSETS/manifest.txt"
+fi
+
 # Téléchargements optionnels depuis des miroirs internes (si des URLs sont fournies)
 download_from_list "$ROOT/mods.list" "$MODS" "${MOD_MIRROR_BASE:-}" ".jar"
 download_from_list "$ROOT/plugins.list" "$PLUGINS" "${PLUGIN_MIRROR_BASE:-}" ".jar"
 download_from_list "$ROOT/maps.list" "$MAPS" "${MAP_MIRROR_BASE:-}" ""
+download_from_list "$ROOT/assets/gui.list" "$GUI_ASSETS" "${GUI_ASSET_BASE:-https://raw.githubusercontent.com/ChadY1/legendaryproxysyncronestar-fun/main/proxy/assets/gui}" ".png"
 
 # Génère un fichier de contrôles si absent
 checksums="$CONFIG/checksums.sha256"

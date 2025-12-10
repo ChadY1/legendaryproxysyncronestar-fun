@@ -12,6 +12,6 @@ Scripts fournis :
 - `military_ops.sq` : crochets pour gameplay militaire (alerts, balises, radio de squad).
 - `police_ops.sq` : interactions policières (menottes, sirènes, alertes).
 - `medic_ops.sq` : trousse médicale, défibrillateur, stabilisation de blessés.
-- `gui_star_life.sq` : GUIs StarLife RP (ATM complet, pompe à essence, concessionnaire) avec les textures PNG décrites dans `../assets/gui/README.md`.
+- `gui_star_life.sq` : GUIs StarLife RP (ATM complet, virements, pompe à essence, assurance véhicule, terminaux police/médic/militaire, passeport) avec les textures PNG décrites dans `../assets/gui/README.md`.
 
 Documentation officielle : https://sqript.github.io/ (miroir communautaire)
