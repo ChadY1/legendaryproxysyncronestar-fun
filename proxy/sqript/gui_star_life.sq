@@ -1,0 +1,118 @@
+# Interfaces StarLife RP (ATM, pompe à essence, concessionnaire)
+# Ce script suppose SQript 1.7.10 avec le support des GUIs inventaire/formulaire.
+# Les textures montrées dans le ticket sont attendues dans `../assets/gui` et référencées par nom.
+
+# --- Paramètres généraux ---
+set {gui.currencySymbol} to "€"
+set {gui.withdrawOptions::*} to 10, 20, 50, 100, 500, 1000
+set {gui.fuel.pricePerUnit} to 5 # 5€ par unité d'essence
+set {gui.vehicle.basePrice} to 15000
+
+# --- Commande principale ATM ---
+command /atm:
+  description: "Ouvre l'ATM StarLife"
+  trigger:
+    open_gui(player, "atm_home", title="ATM Bank | StarLife RP", texture="atm_home.png")
+
+trigger on gui_open id "atm_home":
+  gui_set_button("atm_home", slot=10, id="atm_withdraw_btn", icon="atm_withdraw.png", label="Withdraw")
+  gui_set_button("atm_home", slot=12, id="atm_deposit_btn", icon="atm_deposit.png", label="Deposit")
+  gui_set_button("atm_home", slot=14, id="atm_log_btn", icon="atm_log.png", label="Transaction Log")
+  gui_set_button("atm_home", slot=16, id="atm_close_btn", icon="atm_close.png", label="Close")
+
+trigger on gui_click id "atm_home" where button_id == "atm_close_btn":
+  close_gui(player)
+
+trigger on gui_click id "atm_home" where button_id == "atm_withdraw_btn":
+  open_gui(player, "atm_withdraw", title="Withdraw Money", texture="atm_withdraw.png")
+
+trigger on gui_open id "atm_withdraw":
+  loop {gui.withdrawOptions::*}:
+    set {_slot} to loop_index - 1
+    gui_set_button("atm_withdraw", slot={_slot}, id="atm_withdraw_%loop-value%", icon="note_%loop-value%.png", label="%loop-value% {gui.currencySymbol}")
+  gui_set_button("atm_withdraw", slot=8, id="atm_withdraw_close", icon="atm_close.png", label="Fermer")
+
+trigger on gui_click id "atm_withdraw" where button_id startswith "atm_withdraw_":
+  set {_amount} to button_id after "atm_withdraw_"
+  if bank_balance(player) < {_amount}:
+    open_gui(player, "atm_fail", title="ATM Bank | Denied", texture="atm_denied.png")
+    stop
+  remove_bank_balance(player, {_amount})
+  add_money(player, {_amount})
+  open_gui(player, "atm_success", title="Retrait OK", texture="atm_success.png")
+
+trigger on gui_click id "atm_withdraw" where button_id == "atm_withdraw_close":
+  close_gui(player)
+
+trigger on gui_click id "atm_home" where button_id == "atm_deposit_btn":
+  open_anvil_gui(player, "atm_deposit", prompt="Montant à déposer", texture="atm_home.png")
+
+trigger on anvil_submit id "atm_deposit":
+  set {_amount} to anvil_text_input()
+  if {_amount} <= 0: stop with "Montant invalide"
+  if player.balance < {_amount}: stop with "Solde insuffisant"
+  remove_money(player, {_amount})
+  add_bank_balance(player, {_amount})
+  send_message(player, "Dépôt de %_amount% {gui.currencySymbol}. Nouveau solde banque: %bank_balance(player)%")
+
+trigger on gui_click id "atm_home" where button_id == "atm_log_btn":
+  open_gui(player, "atm_log", title="Transactions", texture="atm_log.png")
+  gui_fill_with_text("atm_log", lines=last_transactions(player, limit=5))
+
+# --- Piratage ATM avec barre de progression ---
+trigger on rightclick on block where block_type == "atm_block":
+  if player.has_item("rare_hacking_key"):
+    open_gui(player, "atm_hacking", title="HACKING ATM BANK", texture="atm_hacking.png")
+    start_progress_bar(player, id="atm_hack_progress", duration=8s, on_complete="atm_hack_done", on_fail="atm_hack_fail")
+  else:
+    send_message(player, "Cette ATM est protégée. Une clé de piratage est nécessaire.")
+
+trigger on progress_complete id "atm_hack_done":
+  if random_chance(70):
+    give_player_money(player, random_int(250, 750))
+    open_gui(player, "atm_success", title="SUCCESS", texture="atm_hacked.png")
+  else:
+    execute_event("atm_hack_fail")
+
+trigger on progress_fail id "atm_hack_fail":
+  open_gui(player, "atm_fail", title="FAILURE", texture="atm_denied.png")
+  broadcast("Alerte banque: tentative de piratage par %player% !")
+  apply_status(player, "slowness", 10)
+
+# --- Pompe à essence ---
+command /fuelpump:
+  description: "Acheter de l'essence via la pompe"
+  trigger:
+    open_anvil_gui(player, "fuel_buy", prompt="Quantité d'essence", texture="fuel_pump.png")
+
+trigger on anvil_submit id "fuel_buy":
+  set {_qty} to anvil_text_input()
+  if {_qty} <= 0: stop with "Quantité invalide"
+  set {_cost} to {_qty} * {gui.fuel.pricePerUnit}
+  if player.balance < {_cost}: stop with "Solde insuffisant (%{_cost}% {gui.currencySymbol})"
+  remove_money(player, {_cost})
+  give_item(player, "fuel_canister", nbt={amount:{_qty}})
+  send_message(player, "Achat de %{_qty}% unités pour %{_cost}% {gui.currencySymbol}")
+
+# --- Concessionnaire / achat de véhicule ---
+command /dealership:
+  description: "Ouvre la grille d'achat de véhicules"
+  trigger:
+    open_gui(player, "vehicle_buy", title="ACHAT DE VÉHICULE", texture="vehicle_grid.png")
+
+trigger on gui_open id "vehicle_buy":
+  loop all_vehicles_for_sale():
+    set {_slot} to loop_index - 1
+    gui_set_button("vehicle_buy", slot={_slot}, id="veh_%loop-value%.id%", icon=loop-value().icon, label="%loop-value().name% (%loop-value().price% {gui.currencySymbol})")
+  gui_set_button("vehicle_buy", slot=26, id="veh_buy_close", icon="atm_close.png", label="Fermer")
+
+trigger on gui_click id "vehicle_buy" where button_id startswith "veh_":
+  set {_veh} to vehicle_from_id(button_id after "veh_")
+  if {_veh} is null: stop with "Véhicule indisponible"
+  if player.bank_balance < {_veh.price}: stop with "Prix: %{_veh.price}% {gui.currencySymbol}. Solde insuffisant."
+  remove_bank_balance(player, {_veh.price})
+  give_vehicle_to_player(player, {_veh})
+  send_message(player, "Achat validé pour %{_veh.name}% !")
+
+trigger on gui_click id "vehicle_buy" where button_id == "veh_buy_close":
+  close_gui(player)

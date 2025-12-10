@@ -1,0 +1,14 @@
+# ATM hacking avec clé rare
+trigger on rightclick on block where block_type == "atm_block":
+  if player.has_item("rare_hacking_key"):
+    open_gui(player, "atm_hacking", title="ATM sécurisée")
+  else:
+    send_message(player, "Cette ATM est protégée. Trouve une clé de pirate !")
+
+trigger on gui_submit id "atm_hacking":
+  if random_chance(15):
+    give_player_money(player, random_int(50, 200))
+    send_message(player, "Pirate réussi !")
+  else:
+    broadcast("Alerte: tentative de piratage par %player% sur un ATM")
+    apply_status(player, "slowness", 10)

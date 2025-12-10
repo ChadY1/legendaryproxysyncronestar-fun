@@ -1,0 +1,13 @@
+# Identité, passeports et clés de véhicule
+command /passport create:
+  give_item(player, "passport", nbt={owner:%player%})
+  send_message(player, "Passeport généré")
+
+command /vehiclekey bind <vehicle_id>:
+  give_item(player, "vehicle_key", nbt={vehicle:<vehicle_id>, owner:%player%})
+  send_message(player, "Clé liée au véhicule %vehicle_id%")
+
+trigger on rightclick on vehicle:
+  if not item_in_hand().nbt.owner == player: stop with "Clé invalide"
+  if not item_in_hand().nbt.vehicle == vehicle.id: stop with "Cette clé n'ouvre pas ce véhicule"
+  allow_vehicle_use(player, vehicle)
