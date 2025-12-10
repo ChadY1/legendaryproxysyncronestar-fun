@@ -1,0 +1,7 @@
+# Hooks pour gameplay militaire
+command /mil alert <zone>:
+  broadcast("[MIL] Alerte en zone %zone% déclenchée par %player%")
+
+command /mil supplydrop <x> <y> <z>:
+  spawn_crate(x, y, z, loot="military")
+  broadcast("[MIL] Drop militaire en %x%,%y%,%z%")
