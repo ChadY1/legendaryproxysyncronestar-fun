@@ -1,0 +1,279 @@
+# Interfaces StarLife RP (ATM, pompe à essence, concessionnaire)
+# Ce script suppose SQript 1.7.10 avec le support des GUIs inventaire/formulaire.
+# Les textures GitHub (https://github.com/ChadY1/legendaryproxysyncronestar-fun/tree/main/proxy/assets/gui)
+# sont attendues dans `../assets/gui` et référencées par nom. Les noms sont centralisés ci-dessous pour
+# rester synchronisé avec les PNG fournis.
+
+# --- Paramètres généraux ---
+set {gui.currencySymbol} to "€"
+set {gui.withdrawOptions::*} to 10, 20, 50, 100, 500, 1000
+set {gui.fuel.pricePerUnit} to 5 # 5€ par unité d'essence
+set {gui.vehicle.basePrice} to 15000
+set {gui.vehicle.insuranceRate} to 0.08 # 8% d'assurance optionnelle
+
+# Textures (mettre à jour si un PNG est renommé)
+set {gui.tex.atm.home} to "atm_home.png"
+set {gui.tex.atm.withdraw} to "atm_withdraw.png"
+set {gui.tex.atm.deposit} to "atm_deposit.png"
+set {gui.tex.atm.log} to "atm_log.png"
+set {gui.tex.atm.close} to "atm_close.png"
+set {gui.tex.atm.denied} to "atm_denied.png"
+set {gui.tex.atm.success} to "atm_success.png"
+set {gui.tex.atm.hacking} to "atm_hacking.png"
+set {gui.tex.atm.hacked} to "atm_hacked.png"
+set {gui.tex.atm.transfer} to "atm_transfer.png"
+set {gui.tex.starlife.brand} to "starlife_brand.png"
+set {gui.tex.vehicle.grid} to "vehicle_grid.png"
+set {gui.tex.vehicle.insurance} to "vehicle_insurance.png"
+set {gui.tex.fuel.pump} to "fuel_pump.png"
+set {gui.tex.identity.passport} to "passport_menu.png"
+set {gui.tex.police.terminal} to "police_terminal.png"
+set {gui.tex.medic.tablet} to "medic_tablet.png"
+set {gui.tex.military.ops} to "military_ops.png"
+set {gui.tex.notes.prefix} to "note_" # ex: note_10.png, note_20.png...
+
+# --- Commande principale ATM ---
+command /atm:
+  description: "Ouvre l'ATM StarLife"
+  trigger:
+    open_gui(player, "atm_home", title="ATM Bank | StarLife RP", texture={gui.tex.atm.home})
+
+trigger on gui_open id "atm_home":
+  gui_set_button("atm_home", slot=10, id="atm_withdraw_btn", icon={gui.tex.atm.withdraw}, label="Withdraw")
+  gui_set_button("atm_home", slot=12, id="atm_deposit_btn", icon={gui.tex.atm.deposit}, label="Deposit")
+  gui_set_button("atm_home", slot=14, id="atm_log_btn", icon={gui.tex.atm.log}, label="Transactions")
+  gui_set_button("atm_home", slot=15, id="atm_transfer_btn", icon={gui.tex.atm.transfer}, label="Virement")
+  gui_set_button("atm_home", slot=16, id="atm_close_btn", icon={gui.tex.atm.close}, label="Close")
+
+trigger on gui_click id "atm_home" where button_id == "atm_close_btn":
+  close_gui(player)
+
+trigger on gui_click id "atm_home" where button_id == "atm_withdraw_btn":
+  open_gui(player, "atm_withdraw", title="Withdraw Money", texture={gui.tex.atm.withdraw})
+
+trigger on gui_open id "atm_withdraw":
+  loop {gui.withdrawOptions::*}:
+    set {_slot} to loop_index - 1
+    gui_set_button("atm_withdraw", slot={_slot}, id="atm_withdraw_%loop-value%", icon="%{gui.tex.notes.prefix}%%loop-value%%.png", label="%loop-value% {gui.currencySymbol}")
+  gui_set_button("atm_withdraw", slot=8, id="atm_withdraw_close", icon={gui.tex.atm.close}, label="Fermer")
+
+trigger on gui_click id "atm_withdraw" where button_id startswith "atm_withdraw_":
+  set {_amount} to button_id after "atm_withdraw_"
+  if bank_balance(player) < {_amount}:
+    open_gui(player, "atm_fail", title="ATM Bank | Denied", texture={gui.tex.atm.denied})
+    stop
+  remove_bank_balance(player, {_amount})
+  add_money(player, {_amount})
+  open_gui(player, "atm_success", title="Retrait OK", texture={gui.tex.atm.success})
+
+trigger on gui_click id "atm_withdraw" where button_id == "atm_withdraw_close":
+  close_gui(player)
+
+trigger on gui_click id "atm_home" where button_id == "atm_deposit_btn":
+  open_anvil_gui(player, "atm_deposit", prompt="Montant à déposer", texture={gui.tex.atm.deposit})
+
+trigger on anvil_submit id "atm_deposit":
+  set {_amount} to anvil_text_input()
+  if {_amount} <= 0: stop with "Montant invalide"
+  if player.balance < {_amount}: stop with "Solde insuffisant"
+  remove_money(player, {_amount})
+  add_bank_balance(player, {_amount})
+  send_message(player, "Dépôt de %_amount% {gui.currencySymbol}. Nouveau solde banque: %bank_balance(player)%")
+
+trigger on gui_click id "atm_home" where button_id == "atm_log_btn":
+  open_gui(player, "atm_log", title="Transactions", texture={gui.tex.atm.log})
+  gui_fill_with_text("atm_log", lines=last_transactions(player, limit=5))
+
+trigger on gui_click id "atm_home" where button_id == "atm_transfer_btn":
+  open_anvil_gui(player, "atm_transfer_target", prompt="Pseudo du destinataire", texture={gui.tex.atm.transfer})
+
+trigger on anvil_submit id "atm_transfer_target":
+  set {atm.transfer.target::%player%} to anvil_text_input()
+  open_anvil_gui(player, "atm_transfer_amount", prompt="Montant à envoyer", texture={gui.tex.atm.transfer})
+
+trigger on anvil_submit id "atm_transfer_amount":
+  set {_target} to {atm.transfer.target::%player%}
+  set {_amount} to anvil_text_input()
+  if {_amount} <= 0: stop with "Montant invalide"
+  if bank_balance(player) < {_amount}: stop with "Solde insuffisant pour virer %{_amount}%"
+  remove_bank_balance(player, {_amount})
+  add_bank_balance({_target}, {_amount})
+  log_transaction(player, "Virement vers %{_target}%", {_amount})
+  send_message(player, "Virement envoyé à %{_target}% pour %{_amount}% {gui.currencySymbol}")
+  delete {atm.transfer.target::%player%}
+
+# --- Piratage ATM avec barre de progression ---
+trigger on rightclick on block where block_type == "atm_block":
+  if player.has_item("rare_hacking_key"):
+    open_gui(player, "atm_hacking", title="HACKING ATM BANK", texture="atm_hacking.png")
+    start_progress_bar(player, id="atm_hack_progress", duration=8s, on_complete="atm_hack_done", on_fail="atm_hack_fail")
+  else:
+    send_message(player, "Cette ATM est protégée. Une clé de piratage est nécessaire.")
+
+trigger on progress_complete id "atm_hack_done":
+  if random_chance(70):
+    give_player_money(player, random_int(250, 750))
+    open_gui(player, "atm_success", title="SUCCESS", texture="atm_hacked.png")
+  else:
+    execute_event("atm_hack_fail")
+
+trigger on progress_fail id "atm_hack_fail":
+  open_gui(player, "atm_fail", title="FAILURE", texture="atm_denied.png")
+  broadcast("Alerte banque: tentative de piratage par %player% !")
+  apply_status(player, "slowness", 10)
+
+# --- Pompe à essence ---
+command /fuelpump:
+  description: "Acheter de l'essence via la pompe"
+  trigger:
+    open_anvil_gui(player, "fuel_buy", prompt="Quantité d'essence", texture="fuel_pump.png")
+
+trigger on anvil_submit id "fuel_buy":
+  set {_qty} to anvil_text_input()
+  if {_qty} <= 0: stop with "Quantité invalide"
+  set {_cost} to {_qty} * {gui.fuel.pricePerUnit}
+  if player.balance < {_cost}: stop with "Solde insuffisant (%{_cost}% {gui.currencySymbol})"
+  remove_money(player, {_cost})
+  give_item(player, "fuel_canister", nbt={amount:{_qty}})
+  send_message(player, "Achat de %{_qty}% unités pour %{_cost}% {gui.currencySymbol}")
+
+# --- Concessionnaire / achat de véhicule ---
+command /dealership:
+  description: "Ouvre la grille d'achat de véhicules"
+  trigger:
+    open_gui(player, "vehicle_buy", title="ACHAT DE VÉHICULE", texture="vehicle_grid.png")
+
+trigger on gui_open id "vehicle_buy":
+  loop all_vehicles_for_sale():
+    set {_slot} to loop_index - 1
+    gui_set_button("vehicle_buy", slot={_slot}, id="veh_%loop-value%.id%", icon=loop-value().icon, label="%loop-value().name% (%loop-value().price% {gui.currencySymbol})")
+  gui_set_button("vehicle_buy", slot=26, id="veh_buy_close", icon="atm_close.png", label="Fermer")
+
+trigger on gui_click id "vehicle_buy" where button_id startswith "veh_":
+  set {_veh} to vehicle_from_id(button_id after "veh_")
+  if {_veh} is null: stop with "Véhicule indisponible"
+  if player.bank_balance < {_veh.price}: stop with "Prix: %{_veh.price}% {gui.currencySymbol}. Solde insuffisant."
+  remove_bank_balance(player, {_veh.price})
+  give_vehicle_to_player(player, {_veh})
+  send_message(player, "Achat validé pour %{_veh.name}% !")
+  if {gui.vehicle.insuranceRate} > 0:
+    open_gui(player, "vehicle_insurance", title="Assurance véhicule", texture={gui.tex.vehicle.insurance})
+    set {vehicle.pending.id::%player%} to {_veh.id}
+
+trigger on gui_click id "vehicle_buy" where button_id == "veh_buy_close":
+  close_gui(player)
+
+trigger on gui_open id "vehicle_insurance":
+  set {_vehId} to {vehicle.pending.id::%player%}
+  set {_veh} to vehicle_from_id({_vehId})
+  if {_veh} is null: close_gui(player) and stop
+  set {_premium} to round({_veh.price} * {gui.vehicle.insuranceRate})
+  gui_set_button("vehicle_insurance", slot=11, id="ins_accept", icon={gui.tex.vehicle.insurance}, label="Assurer %{_veh.name}% (%{_premium}% {gui.currencySymbol})")
+  gui_set_button("vehicle_insurance", slot=15, id="ins_skip", icon={gui.tex.atm.close}, label="Sans assurance")
+
+trigger on gui_click id "vehicle_insurance" where button_id == "ins_accept":
+  set {_vehId} to {vehicle.pending.id::%player%}
+  set {_veh} to vehicle_from_id({_vehId})
+  set {_premium} to round({_veh.price} * {gui.vehicle.insuranceRate})
+  if bank_balance(player) < {_premium}: stop with "Solde insuffisant pour l'assurance (%{_premium}% {gui.currencySymbol})"
+  remove_bank_balance(player, {_premium})
+  add_vehicle_insurance(player, {_veh}, months=1)
+  send_message(player, "Assurance activée pour %{_veh.name}%")
+  delete {vehicle.pending.id::%player%}
+  close_gui(player)
+
+trigger on gui_click id "vehicle_insurance" where button_id == "ins_skip":
+  send_message(player, "Assurance ignorée pour ce véhicule. Vous pouvez l'ajouter plus tard." )
+  delete {vehicle.pending.id::%player%}
+  close_gui(player)
+
+# --- Identité & passeport ---
+command /passport:
+  description: "Affiche ou génère un passeport RP"
+  trigger:
+    open_gui(player, "passport_menu", title="Passeport StarLife", texture={gui.tex.identity.passport})
+
+trigger on gui_open id "passport_menu":
+  gui_set_button("passport_menu", slot=11, id="passport_show", icon={gui.tex.identity.passport}, label="Afficher")
+  gui_set_button("passport_menu", slot=13, id="passport_refresh", icon={gui.tex.starlife.brand}, label="Mettre à jour")
+  gui_set_button("passport_menu", slot=15, id="passport_close", icon={gui.tex.atm.close}, label="Fermer")
+
+trigger on gui_click id "passport_menu" where button_id == "passport_show":
+  send_message(player, "Passeport: %passport_data(player)%")
+
+trigger on gui_click id "passport_menu" where button_id == "passport_refresh":
+  refresh_passport(player)
+  send_message(player, "Passeport mis à jour avec votre identité et vos permis actifs.")
+
+trigger on gui_click id "passport_menu" where button_id == "passport_close":
+  close_gui(player)
+
+# --- Terminaux police / médic / militaire ---
+command /rpops:
+  description: "Ouvre les outils RP (police/médic/militaire)"
+  trigger:
+    open_gui(player, "rp_ops", title="StarLife Ops", texture={gui.tex.police.terminal})
+
+trigger on gui_open id "rp_ops":
+  gui_set_button("rp_ops", slot=10, id="ops_police", icon={gui.tex.police.terminal}, label="Police")
+  gui_set_button("rp_ops", slot=13, id="ops_medic", icon={gui.tex.medic.tablet}, label="Médic")
+  gui_set_button("rp_ops", slot=16, id="ops_military", icon={gui.tex.military.ops}, label="Militaire")
+  gui_set_button("rp_ops", slot=22, id="ops_close", icon={gui.tex.atm.close}, label="Fermer")
+
+trigger on gui_click id "rp_ops" where button_id == "ops_police":
+  open_gui(player, "ops_police_panel", title="Police Toolkit", texture={gui.tex.police.terminal})
+
+trigger on gui_click id "rp_ops" where button_id == "ops_medic":
+  open_gui(player, "ops_medic_panel", title="Médic Toolkit", texture={gui.tex.medic.tablet})
+
+trigger on gui_click id "rp_ops" where button_id == "ops_military":
+  open_gui(player, "ops_military_panel", title="Militaire Toolkit", texture={gui.tex.military.ops})
+
+trigger on gui_click id "rp_ops" where button_id == "ops_close":
+  close_gui(player)
+
+trigger on gui_open id "ops_police_panel":
+  gui_set_button("ops_police_panel", slot=11, id="police_fine", icon={gui.tex.police.terminal}, label="Infliger une amende")
+  gui_set_button("ops_police_panel", slot=13, id="police_checkid", icon={gui.tex.identity.passport}, label="Vérifier ID")
+  gui_set_button("ops_police_panel", slot=15, id="police_broadcast", icon={gui.tex.starlife.brand}, label="Alerte ville")
+
+trigger on gui_click id "ops_police_panel" where button_id == "police_fine":
+  open_anvil_gui(player, "police_fine_amount", prompt="Montant de l'amende", texture={gui.tex.police.terminal})
+
+trigger on anvil_submit id "police_fine_amount":
+  set {_amount} to anvil_text_input()
+  apply_police_fine(player, {_amount})
+
+trigger on gui_click id "ops_police_panel" where button_id == "police_checkid":
+  send_message(player, "Vérifie le passeport du joueur ciblé...")
+
+trigger on gui_click id "ops_police_panel" where button_id == "police_broadcast":
+  broadcast("[POLICE] %player% envoie une alerte générale. Restez à l'abri !")
+
+trigger on gui_open id "ops_medic_panel":
+  gui_set_button("ops_medic_panel", slot=11, id="medic_revive", icon={gui.tex.medic.tablet}, label="Réanimation rapide")
+  gui_set_button("ops_medic_panel", slot=13, id="medic_triage", icon={gui.tex.atm.log}, label="Triage blessés")
+  gui_set_button("ops_medic_panel", slot=15, id="medic_close", icon={gui.tex.atm.close}, label="Fermer")
+
+trigger on gui_click id "ops_medic_panel" where button_id == "medic_revive":
+  revive_nearest_player(player)
+
+trigger on gui_click id "ops_medic_panel" where button_id == "medic_triage":
+  send_message(player, "Liste des blessés à proximité: %nearby_injured()%")
+
+trigger on gui_click id "ops_medic_panel" where button_id == "medic_close":
+  close_gui(player)
+
+trigger on gui_open id "ops_military_panel":
+  gui_set_button("ops_military_panel", slot=11, id="military_callair", icon={gui.tex.military.ops}, label="Appel aérien")
+  gui_set_button("ops_military_panel", slot=13, id="military_recon", icon={gui.tex.starlife.brand}, label="Reconnaissance")
+  gui_set_button("ops_military_panel", slot=15, id="military_close", icon={gui.tex.atm.close}, label="Fermer")
+
+trigger on gui_click id "ops_military_panel" where button_id == "military_callair":
+  request_air_support(player)
+
+trigger on gui_click id "ops_military_panel" where button_id == "military_recon":
+  send_message(player, "Recon en cours: drones alignés sur votre position.")
+
+trigger on gui_click id "ops_military_panel" where button_id == "military_close":
+  close_gui(player)

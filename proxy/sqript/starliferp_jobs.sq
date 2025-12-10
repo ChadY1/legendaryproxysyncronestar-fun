@@ -1,0 +1,53 @@
+# StarLifeRP Jobs & Ressources (inspiré iRP-Job)
+# Simplifie la récolte/traitement pour limiter les erreurs sur 1.7.10.
+
+options:
+    slr_prefix: &7[&bStarLifeRP&7]
+    slr_job_gui: &aAtelier StarLifeRP
+
+function slr_clean_ore(p: player):
+    set {_nb} to number of cobblestone named "&aMinerai brut" in {_p}'s inventory
+    if {_nb} > 0:
+        remove {_nb} of cobblestone named "&aMinerai brut" from {_p}'s inventory
+        wait 2 seconds
+        give {_nb} of stone named "&aBloc raffiné" to {_p}
+        chance of 3%:
+            give 1 diamond named "&bPierre précieuse" to {_p}
+        send "{@slr_prefix} &a%{_nb}% blocs raffinés." to {_p}
+    else:
+        send "{@slr_prefix} &cAucun minerai brut à traiter." to {_p}
+
+function slr_clean_logs(p: player):
+    set {_nb} to number of spruce wood named "&aBois brut" in {_p}'s inventory
+    if {_nb} > 0:
+        remove {_nb} of spruce wood named "&aBois brut" from {_p}'s inventory
+        wait 2 seconds
+        give {_nb} of wooden planks named "&aPlanche traitée" to {_p}
+        send "{@slr_prefix} &a%{_nb}% planches prêtes à vendre." to {_p}
+    else:
+        send "{@slr_prefix} &cAucun bois brut." to {_p}
+
+on break of cobblestone:
+    if player is holding any pickaxe:
+        drop 1 cobblestone named "&aMinerai brut" at event-block
+
+on break of spruce wood:
+    if player is holding any axe:
+        drop 1 spruce wood named "&aBois brut" at event-block
+
+command /slrjobkit:
+    aliases: /starliferpjob
+    trigger:
+        give 1 iron pickaxe named "&aPioche SLR" to player
+        give 1 iron axe named "&aHache SLR" to player
+        message "{@slr_prefix} &7Kit métier remis."
+
+command /slratelier:
+    trigger:
+        open chest with 3 rows named "{@slr_job_gui}" to player
+        wait 1 tick
+        format gui slot 0, 2, 4, 6, 8, 18, 20, 22, 24 and 26 of player with black stained glass pane named " " to do nothing
+        format gui slot 10 of player with cobblestone named "&aTraiter le minerai" with lore "&7Clique pour raffiner." to run function slr_clean_ore(player)
+        format gui slot 12 of player with furnace named "&bTips" with lore "&7Use /slrjobkit pour récupérer tes outils." to do nothing
+        format gui slot 14 of player with spruce wood named "&aDébitage du bois" with lore "&7Clique pour raboter." to run function slr_clean_logs(player)
+        format gui slot 16 of player with paper named "&bTutoriel" with lore "&7Cassez du bois/pierre -> atelier." to do nothing

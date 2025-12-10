@@ -1,0 +1,7 @@
+# Hooks pour gameplay police
+command /police siren on:
+  play_sound(player.location, "siren", volume=1.5, pitch=1.0)
+
+command /police arrest <target>:
+  apply_status(<target>, "slowness", 15)
+  send_message(<target>, "Vous êtes en état d'arrestation")
