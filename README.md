@@ -18,13 +18,13 @@ Ce dépôt inclut désormais un dossier `proxy/` prêt à être automatisé pour
 
 ## Build
 
-Le projet utilise Gradle + Shadow pour produire un JAR prêt à l'emploi. Utilise une installation locale de Gradle 8+ ou ajoute ton wrapper avant le build.
+Le projet utilise Gradle + Shadow pour produire un JAR prêt à l'emploi. Le wrapper pointe sur Gradle 8.14.3 et télécharge automatiquement `gradle-wrapper.jar` depuis la distribution officielle si le binaire n'est pas présent (binaire non versionné pour garder le dépôt 100% sans fichiers lourds). Le fichier `settings.gradle` applique le plugin `org.gradle.toolchains.foojay-resolver-convention` qui télécharge automatiquement un JDK 17 (Adoptium) si aucun JDK 17 n'est détecté (utile sur Windows CI/bureaux). Assure-toi simplement d'autoriser Gradle à accéder à Internet ou fournis un JDK 17 local via `JAVA_HOME`/`org.gradle.java.home`.
 
 ```bash
-gradle build
- ```
+./gradlew build
+```
 
-Le JAR final est généré dans `build/libs/StarfunCoreVelocity-1.0.0.jar`.
+`gradlew` (Unix) et `gradlew.bat` (Windows) gèrent le téléchargement/extraction automatique du wrapper JAR et de la distribution Gradle. Pas besoin d'ajouter le binaire au dépôt : un accès HTTP/HTTPS suffit. Le JAR final est généré dans `build/libs/StarfunCoreVelocity-1.0.0.jar`.
 
 ## Plan Proxy/Mohist (1.7.10 RolePlay + Moddé)
 
@@ -34,6 +34,7 @@ Le dossier `proxy/` fournit des fichiers prêts à automatiser pour un réseau P
 - `proxy/templates/mohist-server.properties` : base sécurisée pour Mohist (motd, whitelist, etc.).
 - `proxy/config/security.md` et `proxy/config/checksums.sha256` : à compléter dans votre CI avec les secrets et empreintes.
 - `proxy/mods.list` : liste des mods recommandés (ArmaMania, Decocraft, Dynamic Surroundings, Flan's Mod + packs, ArchitectureCraft, Carpenter's Blocks, TubeTransports...).
+- Les téléchargements (archives et JAR) sont mis en cache dans `proxy/downloads/` puis recopiés dans `mods/`, `plugins/`, `maps/`. Ces dossiers sont ignorés par Git pour éviter l'erreur « Les fichiers binaires ne sont pas pris en charge » et garder le dépôt léger.
 
 ### Usage rapide
 

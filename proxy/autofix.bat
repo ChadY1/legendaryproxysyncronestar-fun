@@ -7,12 +7,14 @@ set CONFIG=%ROOT%\config
 set MODS=%ROOT%\mods
 set PLUGINS=%ROOT%\plugins
 set MAPS=%ROOT%\maps
+set DOWNLOADS=%ROOT%\downloads
 set TEMPLATES=%ROOT%\templates
 
 if not exist "%CONFIG%" mkdir "%CONFIG%"
 if not exist "%MODS%" mkdir "%MODS%"
 if not exist "%PLUGINS%" mkdir "%PLUGINS%"
 if not exist "%MAPS%" mkdir "%MAPS%"
+if not exist "%DOWNLOADS%" mkdir "%DOWNLOADS%"
 if not exist "%ROOT%\logs" mkdir "%ROOT%\logs"
 
 call :copy_if_absent "%TEMPLATES%\mohist-server.properties" "%CONFIG%\server.properties"
@@ -52,6 +54,7 @@ set LIST=%1
 set DEST=%2
 set BASE=%3
 set DEFAULT_EXT=%4
+set CACHEFILE=
 if not exist %LIST% goto :eof
 for /f "usebackq tokens=1,2" %%A in (%LIST%) do (
   set NAME=%%A
@@ -63,7 +66,17 @@ for /f "usebackq tokens=1,2" %%A in (%LIST%) do (
     echo !FILENAME!| findstr /R /C:"\." >nul || set FILENAME=!FILENAME!!DEFAULT_EXT!
   )
   set TARGET=%DEST%\!FILENAME!
-  if exist !TARGET! goto :continue
+  set CACHEFILE=%DOWNLOADS%\!FILENAME!
+  if exist !CACHEFILE! (
+    copy /Y !CACHEFILE! !TARGET! >nul
+    call :extract_if_archive "!CACHEFILE!" "%DEST%"
+    goto :continue
+  )
+  if exist !TARGET! (
+    copy /Y !TARGET! !CACHEFILE! >nul
+    call :extract_if_archive "!TARGET!" "%DEST%"
+    goto :continue
+  )
   if "!URL!"=="" (
     if "!BASE!"=="" (
       echo Avertissement: aucune URL pour !FILENAME! et aucune base n'est definie
@@ -72,7 +85,13 @@ for /f "usebackq tokens=1,2" %%A in (%LIST%) do (
     set URL=!BASE!/!FILENAME!
   )
   echo Téléchargement de !FILENAME! depuis !URL!
-  powershell -Command "try {Invoke-WebRequest -Uri '!URL!' -OutFile '!TARGET!' -UseBasicParsing} catch {Remove-Item -ErrorAction SilentlyContinue '!TARGET!'; Write-Host 'Avertissement: echec de telechargement pour !FILENAME!' }"
+  powershell -Command "try {Invoke-WebRequest -Uri '!URL!' -OutFile '!CACHEFILE!' -UseBasicParsing; Copy-Item -Force '!CACHEFILE!' '!TARGET!'; $dest='""%DEST%""'; & '""%SystemRoot%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe""' -NoProfile -Command 'if (Test-Path ''""!CACHEFILE!""'') { $ext=[System.IO.Path]::GetExtension(''""!CACHEFILE!""'').ToLower(); if ($ext -eq ''.zip'') { Expand-Archive -Force -LiteralPath ''""!CACHEFILE!""'' -DestinationPath $dest } elseif ($ext -eq ''.gz'' -or $ext -eq ''.tgz'') { tar -xf ''""!CACHEFILE!""'' -C $dest } }' } catch {Remove-Item -ErrorAction SilentlyContinue '!CACHEFILE!','!TARGET!'; Write-Host 'Avertissement: echec de telechargement pour !FILENAME!' }"
   :continue
 )
+goto :eof
+
+:extract_if_archive
+set FILE=%1
+set DESTDIR=%2
+powershell -Command "if (Test-Path '""%FILE%""') { $ext=[System.IO.Path]::GetExtension('""%FILE%""').ToLower(); if ($ext -eq '.zip') { Expand-Archive -Force -LiteralPath '""%FILE%""' -DestinationPath '""%DESTDIR%""' } elseif ($ext -eq '.gz' -or $ext -eq '.tgz') { tar -xf '""%FILE%""' -C '""%DESTDIR%""' } }"
 goto :eof

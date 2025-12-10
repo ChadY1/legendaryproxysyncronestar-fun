@@ -6,7 +6,28 @@ CONFIG="$ROOT/config"
 MODS="$ROOT/mods"
 PLUGINS="$ROOT/plugins"
 MAPS="$ROOT/maps"
+DOWNLOADS="$ROOT/downloads"
 TEMPLATES="$ROOT/templates"
+
+extract_if_archive() {
+  local file="$1"
+  local destination_dir="$2"
+
+  case "$file" in
+    *.zip)
+      if command -v unzip >/dev/null 2>&1; then
+        echo "Extraction de $(basename "$file")"
+        unzip -oqq "$file" -d "$destination_dir" || echo "Avertissement: échec de l'extraction de $file"
+      else
+        echo "Avertissement: 'unzip' est requis pour extraire $file"
+      fi
+      ;;
+    *.tar.gz|*.tgz)
+      echo "Extraction de $(basename "$file")"
+      tar -xzf "$file" -C "$destination_dir" || echo "Avertissement: échec de l'extraction de $file"
+      ;;
+  esac
+}
 
 download_from_list() {
   local list_file="$1"
@@ -28,8 +49,20 @@ download_from_list() {
       filename="${filename}${default_ext}"
     fi
 
+    local cache_file="$DOWNLOADS/$filename"
     local target="$destination_dir/$filename"
+
+    mkdir -p "$destination_dir"
+
+    if [ -f "$cache_file" ]; then
+      cp -f "$cache_file" "$target"
+      extract_if_archive "$cache_file" "$destination_dir"
+      continue
+    fi
+
     if [ -f "$target" ]; then
+      cp -f "$target" "$cache_file"
+      extract_if_archive "$target" "$destination_dir"
       continue
     fi
 
@@ -42,14 +75,17 @@ download_from_list() {
     fi
 
     echo "Téléchargement de $filename depuis $url"
-    if ! curl -fsSL "$url" -o "$target"; then
+    if curl -fsSL "$url" -o "$cache_file"; then
+      cp -f "$cache_file" "$target"
+      extract_if_archive "$cache_file" "$destination_dir"
+    else
       echo "Avertissement: impossible de télécharger $filename"
-      rm -f "$target"
+      rm -f "$cache_file" "$target"
     fi
   done < "$list_file"
 }
 
-mkdir -p "$CONFIG" "$MODS" "$PLUGINS" "$MAPS" "$ROOT/logs"
+mkdir -p "$CONFIG" "$MODS" "$PLUGINS" "$MAPS" "$DOWNLOADS" "$ROOT/logs"
 
 # Copie le template server.properties s'il n'existe pas déjà
 if [ -f "$TEMPLATES/mohist-server.properties" ]; then
