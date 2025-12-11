@@ -1,0 +1,23 @@
+# Plugins Proxy/Spigot pour 1.7.10 (nom[.jar] url)
+# Bundle iRP (raw GitHub mirrors from Rubylium/iRP)
+Vault-1.4.1 https://raw.githubusercontent.com/Rubylium/iRP/master/plugins/Vault-1.4.1.jar
+WorldGuard-6.0.0-beta-03 https://raw.githubusercontent.com/Rubylium/iRP/master/plugins/worldguard-6.0.0-beta-03.jar
+Essentials https://raw.githubusercontent.com/Rubylium/iRP/master/plugins/Essentials.jar
+EssentialsChat https://raw.githubusercontent.com/Rubylium/iRP/master/plugins/EssentialsChat.jar
+EssentialsProtect https://raw.githubusercontent.com/Rubylium/iRP/master/plugins/EssentialsProtect.jar
+EssentialsGroupManager https://raw.githubusercontent.com/Rubylium/iRP/master/plugins/EssentialsGroupManager.jar
+EssentialsSpawn https://raw.githubusercontent.com/Rubylium/iRP/master/plugins/EssentialsSpawn.jar
+TuSKe https://raw.githubusercontent.com/Rubylium/iRP/master/plugins/TuSKe.jar
+UmbaskaJava7 https://raw.githubusercontent.com/Rubylium/iRP/master/plugins/UmbaskaJava7.jar
+WildSkript https://raw.githubusercontent.com/Rubylium/iRP/master/plugins/WildSkript.jar
+SkQuery https://raw.githubusercontent.com/Rubylium/iRP/master/plugins/SkQuery.jar
+Citizens-2.0.13-Cauldron https://raw.githubusercontent.com/Rubylium/iRP/master/plugins/citizens-2.0.13-1.7.10-Cauldron-B2.jar
+
+Skript https://github.com/SkriptLang/Skript/releases/download/dev37c/Skript.jar
+SkQuery-Lime https://github.com/SkQuery/SkQuery/releases/download/4.1.6/SkQuery-Lime-4.1.6.jar
+SkRayFall https://github.com/Pikamug/SkRayFall/releases/download/1.9.27/SkRayFall-1.9.27.jar
+LuckPerms-Bukkit https://github.com/LuckPerms/LuckPerms/releases/download/v5.4.127/LuckPerms-Bukkit-5.4.127.jar
+ClearLag https://dev.bukkit.org/projects/clearlagg/files/latest
+MarriageMaster https://github.com/GeorgH93/MarriageMaster/releases/download/2.6.20/MarriageMaster.jar
+FeatherBoard https://api.spiget.org/v2/resources/2691/download
+BungeeSkriptAddons https://github.com/Skungee/Skungee/releases/download/2.0.0-ALPHA-18/Skungee-2.0.0-ALPHA-18.jar
