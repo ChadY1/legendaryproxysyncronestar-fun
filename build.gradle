@@ -1,54 +1,47 @@
 plugins {
     id 'java'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 group = 'gg.starfun'
 version = '1.0.0'
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+}
+
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
-    options.release = 17
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 tasks.withType(Jar).configureEach {
-    archiveBaseName.set('StarfunCoreVelocity')
+    archiveBaseName.set('StarLifeRPMod')
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+sourceSets {
+    main {
+        java {
+            exclude 'gg/starfun/proxy/**'
+        }
+    }
+    stubs {
+        java.srcDir 'src/stubs/java'
+        resources.srcDir 'src/stubs/resources'
+    }
 }
 
 repositories {
     mavenCentral()
-    maven {
-        name = 'papermc'
-        url = 'https://repo.papermc.io/repository/maven-public/'
-    }
-    maven {
-        name = 'velocity'
-        url = 'https://repo.velocitypowered.com/releases/'
-    }
 }
 
 dependencies {
-    compileOnly 'com.velocitypowered:velocity-api:3.1.1'
-    annotationProcessor 'com.velocitypowered:velocity-api:3.1.1'
-
-    implementation 'com.google.code.gson:gson:2.11.0'
-    compileOnly 'com.google.guava:guava:32.1.3-jre'
+    compileOnly sourceSets.stubs.output
 }
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
-
-shadowJar {
-    archiveClassifier.set('')
-    minimize {
-        exclude(dependency('com.velocitypowered:velocity-api:3.1.1'))
-    }
-}
-
-tasks.build {
-    dependsOn tasks.shadowJar
+tasks.compileJava {
+    dependsOn tasks.named(sourceSets.stubs.classesTaskName)
+    classpath += sourceSets.stubs.output
 }
