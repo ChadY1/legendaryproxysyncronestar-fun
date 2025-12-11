@@ -1,0 +1,9 @@
+# Hooks pour gameplay medic
+command /medic kit:
+  give_item(player, "medkit", nbt={heals:4})
+  send_message(player, "Trousse médicale distribuée")
+
+command /medic revive <target>:
+  if not has_item(player, "defib"): stop with "Défibrillateur requis"
+  revive_player(<target>)
+  send_message(<target>, "Vous avez été réanimé par %player%")
