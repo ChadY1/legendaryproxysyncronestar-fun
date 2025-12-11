@@ -30,9 +30,12 @@ Une GitHub Action (`.github/workflows/mod-artifact.yml`) construit le mod à cha
 
 ### Utilisation en jeu (mod StarLifeRP)
 
-- Place `build/dist/mods/StarLifeRPMod-1.0.0.jar` dans le dossier `mods/` de ton serveur/client Forge/Mohist 1.7.10.
+- Place `build/dist/mods/StarLifeRPMod-1.0.0.jar` dans le dossier `mods/` de ton serveur/client Forge/Mohist 1.7.10 (copie miroir dans `build/libs/`).
 - Commande principale : `/slr` (alias `/starliferp`) qui ouvre le menu StarLifeRP. Des raccourcis existent : `/slr atm`, `/slr id`, `/slr jobs`, `/slr police`, `/slr medic`, `/slr military`.
 - Les menus clients (ATM, identité, jobs, police, médic, militaire) sont accessibles aussi via la touche configurée « StarLife Menu » dans les options de contrôles.
+- Vérifie en console que le serveur logue `Registered command: slr` au démarrage pour confirmer que la commande est bien chargée. Si Forge affiche une erreur de permission, c'est que le mod n'est pas présent ou qu'il a été altéré.
+- Les textures GUI sont récupérées automatiquement par `proxy/autofix.sh`/`.bat` via `proxy/assets/gui.list`. Si tu les changes, pense à garder la même arborescence dans `assets/starliferp/textures/gui/` pour que les menus restent alignés.
+- Raccourcis rôle-play rapides (client) : touche « StarLife Menu » pour ouvrir le hub, puis clique sur les panneaux ATM / Identité / Police / Médic / Militaire / Jobs. Les sous-menus affichent les boutons contextualisés (dépôt/retrait ATM, création de passeport, amendes, soins, armurerie). Tous les boutons envoient des paquets réseau légers : pas de tick lourd côté serveur.
 - Tous les boutons utilisent des paquets réseau légers et s'appuient sur les textures livrées dans `proxy/assets/gui`. Assure-toi d'avoir les assets copiés côté client (ou fournis via resource pack) pour un rendu HD.
 - Conseils de dépannage : si un serveur refuse la commande, vérifie les permissions `/slr` et le chargement du mod dans les logs FML (`starliferp` doit apparaître sans exception).
 
