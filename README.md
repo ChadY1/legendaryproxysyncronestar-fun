@@ -18,13 +18,23 @@ Ce dépôt inclut désormais un dossier `proxy/` prêt à être automatisé pour
 
 ## Build
 
-Le projet utilise Gradle + Shadow pour produire un JAR prêt à l'emploi. Le wrapper pointe sur Gradle 8.14.3 et télécharge automatiquement `gradle-wrapper.jar` depuis la distribution officielle si le binaire n'est pas présent (binaire non versionné pour garder le dépôt 100% sans fichiers lourds). Le fichier `settings.gradle` applique le plugin `org.gradle.toolchains.foojay-resolver-convention` qui télécharge automatiquement un JDK 17 (Adoptium) si aucun JDK 17 n'est détecté (utile sur Windows CI/bureaux). Assure-toi simplement d'autoriser Gradle à accéder à Internet ou fournis un JDK 17 local via `JAVA_HOME`/`org.gradle.java.home`.
+Le projet est désormais un mod Forge 1.7.10 dédié aux menus StarLifeRP. Le wrapper pointe sur Gradle 8.14.3 et télécharge automatiquement `gradle-wrapper.jar` depuis la distribution officielle si le binaire n'est pas présent (binaire non versionné pour garder le dépôt 100% sans fichiers lourds). La compilation cible Java 8 et s'appuie sur les classes Forge 1.7.10 publiées sur le Maven officiel.
 
 ```bash
-./gradlew build
+./gradlew build --console=plain --no-daemon
 ```
 
-`gradlew` (Unix) et `gradlew.bat` (Windows) gèrent le téléchargement/extraction automatique du wrapper JAR et de la distribution Gradle. Pas besoin d'ajouter le binaire au dépôt : un accès HTTP/HTTPS suffit. Le JAR final est généré dans `build/libs/StarfunCoreVelocity-1.0.0.jar`.
+`gradlew` (Unix) et `gradlew.bat` gèrent le téléchargement/extraction automatique du wrapper et de la distribution Gradle. Pas besoin d'ajouter le binaire au dépôt : un accès HTTP/HTTPS suffit. Le JAR final Forge à déposer dans `mods/` est généré dans `build/libs/StarLifeRPMod-1.0.0.jar` et recopié automatiquement dans `build/dist/mods/` pour faciliter l'upload CI/CD et le téléchargement manuel.
+
+Une GitHub Action (`.github/workflows/mod-artifact.yml`) construit le mod à chaque push/PR et publie automatiquement l'artefact `StarLifeRPMod-jar` contenant le JAR depuis `build/libs/` et `build/dist/mods/`.
+
+### Utilisation en jeu (mod StarLifeRP)
+
+- Place `build/dist/mods/StarLifeRPMod-1.0.0.jar` dans le dossier `mods/` de ton serveur/client Forge/Mohist 1.7.10.
+- Commande principale : `/slr` (alias `/starliferp`) qui ouvre le menu StarLifeRP. Des raccourcis existent : `/slr atm`, `/slr id`, `/slr jobs`, `/slr police`, `/slr medic`, `/slr military`.
+- Les menus clients (ATM, identité, jobs, police, médic, militaire) sont accessibles aussi via la touche configurée « StarLife Menu » dans les options de contrôles.
+- Tous les boutons utilisent des paquets réseau légers et s'appuient sur les textures livrées dans `proxy/assets/gui`. Assure-toi d'avoir les assets copiés côté client (ou fournis via resource pack) pour un rendu HD.
+- Conseils de dépannage : si un serveur refuse la commande, vérifie les permissions `/slr` et le chargement du mod dans les logs FML (`starliferp` doit apparaître sans exception).
 
 ## Plan Proxy/Mohist (1.7.10 RolePlay + Moddé)
 

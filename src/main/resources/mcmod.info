@@ -1,0 +1,16 @@
+[
+  {
+    "modid": "starliferp",
+    "name": "StarLife RP GUI Pack",
+    "description": "Standalone StarLife roleplay GUIs converted from SQript into a lightweight Forge 1.7.10 mod. Use /slr (ou /starliferp) pour ouvrir le menu principal, /slr atm/id/jobs/police/medic/military pour un accès direct et le keybind \"StarLife Menu\" côté client pour naviguer sans commandes.",
+    "version": "1.0.0",
+    "mcversion": "1.7.10",
+    "authorList": ["StarLife Team"],
+    "credits": "Generated automatically for Mohist/Forge 1.7.10.",
+    "url": "https://github.com/ChadY1/legendaryproxysyncronestar-fun",
+    "updateUrl": "",
+    "logoFile": "",
+    "screenshots": [],
+    "parent": ""
+  }
+]
