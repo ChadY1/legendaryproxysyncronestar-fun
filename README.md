@@ -2,6 +2,8 @@
 
 Plugin Velocity fournissant le noyau StarfunCore (messagerie sécurisée entre le proxy Velocity et les hubs Spigot/Folia) via le canal plugin messaging `starfun:core`.
 
+Ce dépôt inclut désormais un dossier `proxy/` prêt à être automatisé pour un réseau ProxyForge/Velocity en frontal d'un serveur Mohist 1.7.10 (RolePlay + Moddé + Plugins). Les templates livrés permettent de sécuriser le proxy, préparer les mods et offrir un script d'« autofix » pour générer l'arborescence par défaut.
+
 ## Configuration
 
 1. Génère une clé AES partagée (128/192/256 bits) en Base64, par exemple :
@@ -16,10 +18,43 @@ Plugin Velocity fournissant le noyau StarfunCore (messagerie sécurisée entre l
 
 ## Build
 
-Le projet utilise Gradle + Shadow pour produire un JAR prêt à l'emploi. Utilise une installation locale de Gradle 8+ ou ajoute ton wrapper avant le build.
+Le projet est désormais un mod Forge 1.7.10 dédié aux menus StarLifeRP. Le wrapper pointe sur Gradle 8.14.3 et télécharge automatiquement `gradle-wrapper.jar` depuis la distribution officielle si le binaire n'est pas présent (binaire non versionné pour garder le dépôt 100% sans fichiers lourds). La compilation cible Java 8 et s'appuie sur les classes Forge 1.7.10 publiées sur le Maven officiel.
 
 ```bash
-gradle build
+./gradlew build --console=plain --no-daemon
 ```
 
-Le JAR final est généré dans `build/libs/StarfunCoreVelocity-1.0.0.jar`.
+`gradlew` (Unix) et `gradlew.bat` gèrent le téléchargement/extraction automatique du wrapper et de la distribution Gradle. Pas besoin d'ajouter le binaire au dépôt : un accès HTTP/HTTPS suffit. Le JAR final Forge à déposer dans `mods/` est généré dans `build/libs/StarLifeRPMod-1.0.0.jar` et recopié automatiquement dans `build/dist/mods/` pour faciliter l'upload CI/CD et le téléchargement manuel.
+
+Une GitHub Action (`.github/workflows/mod-artifact.yml`) construit le mod à chaque push/PR et publie automatiquement l'artefact `StarLifeRPMod-jar` contenant le JAR depuis `build/libs/` et `build/dist/mods/`.
+
+### Utilisation en jeu (mod StarLifeRP)
+
+- Place `build/dist/mods/StarLifeRPMod-1.0.0.jar` dans le dossier `mods/` de ton serveur/client Forge/Mohist 1.7.10 (copie miroir dans `build/libs/`).
+- Commande principale : `/slr` (alias `/starliferp`) qui ouvre le menu StarLifeRP. Des raccourcis existent : `/slr atm`, `/slr id`, `/slr jobs`, `/slr police`, `/slr medic`, `/slr military`.
+- Les menus clients (ATM, identité, jobs, police, médic, militaire) sont accessibles aussi via la touche configurée « StarLife Menu » dans les options de contrôles.
+- Vérifie en console que le serveur logue `Registered command: slr` au démarrage pour confirmer que la commande est bien chargée. Si Forge affiche une erreur de permission, c'est que le mod n'est pas présent ou qu'il a été altéré.
+- Les textures GUI sont récupérées automatiquement par `proxy/autofix.sh`/`.bat` via `proxy/assets/gui.list`. Si tu les changes, pense à garder la même arborescence dans `assets/starliferp/textures/gui/` pour que les menus restent alignés.
+- Raccourcis rôle-play rapides (client) : touche « StarLife Menu » pour ouvrir le hub, puis clique sur les panneaux ATM / Identité / Police / Médic / Militaire / Jobs. Les sous-menus affichent les boutons contextualisés (dépôt/retrait ATM, création de passeport, amendes, soins, armurerie). Tous les boutons envoient des paquets réseau légers : pas de tick lourd côté serveur.
+- Tous les boutons utilisent des paquets réseau légers et s'appuient sur les textures livrées dans `proxy/assets/gui`. Assure-toi d'avoir les assets copiés côté client (ou fournis via resource pack) pour un rendu HD.
+- Conseils de dépannage : si un serveur refuse la commande, vérifie les permissions `/slr` et le chargement du mod dans les logs FML (`starliferp` doit apparaître sans exception).
+
+## Plan Proxy/Mohist (1.7.10 RolePlay + Moddé)
+
+Le dossier `proxy/` fournit des fichiers prêts à automatiser pour un réseau ProxyForge/Velocity + Mohist 1.7.10 :
+
+- `proxy/autofix.sh` : crée l'arborescence (mods, plugins, config), copie les templates et peut télécharger les mods listés dans `proxy/mods.list` via la variable d'environnement `MOD_MIRROR_BASE`.
+- `proxy/templates/mohist-server.properties` : base sécurisée pour Mohist (motd, whitelist, etc.).
+- `proxy/config/security.md` et `proxy/config/checksums.sha256` : à compléter dans votre CI avec les secrets et empreintes.
+- `proxy/mods.list` : liste des mods recommandés (ArmaMania, Decocraft, Dynamic Surroundings, Flan's Mod + packs, ArchitectureCraft, Carpenter's Blocks, TubeTransports...).
+- Les téléchargements (archives et JAR) sont mis en cache dans `proxy/downloads/` puis recopiés dans `mods/`, `plugins/`, `maps/`. Ces dossiers sont ignorés par Git pour éviter l'erreur « Les fichiers binaires ne sont pas pris en charge » et garder le dépôt léger.
+
+### Usage rapide
+
+```bash
+./proxy/autofix.sh
+# Puis pousser les mods/plugins/maps depuis votre miroir privé et compléter les checksums
+```
+
+- Un workflow GitHub Actions (`.github/workflows/proxy-autostart.yml`) est fourni pour simuler le bootstrap CI : il lance `autofix.sh` et télécharge automatiquement les mods/plugins/maps si les variables `MOD_MIRROR_BASE`, `PLUGIN_MIRROR_BASE` et `MAP_MIRROR_BASE` sont fournies en secrets.
+- Assure-toi que la clé AES `starfun:core` et le `forwarding-secret` ProxyForge/Velocity sont renseignés avant de déployer.

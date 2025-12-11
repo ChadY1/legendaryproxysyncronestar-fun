@@ -1,0 +1,28 @@
+name: Proxy auto-setup simulation
+
+on:
+  workflow_dispatch: {}
+  push:
+    paths:
+      - 'proxy/**'
+      - '.github/workflows/proxy-autostart.yml'
+
+jobs:
+  simulate:
+    runs-on: ubuntu-latest
+    env:
+      MOD_MIRROR_BASE: ${{ secrets.MOD_MIRROR_BASE }}
+      PLUGIN_MIRROR_BASE: ${{ secrets.PLUGIN_MIRROR_BASE }}
+      MAP_MIRROR_BASE: ${{ secrets.MAP_MIRROR_BASE }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare proxy tree
+        run: |
+          chmod +x proxy/autofix.sh
+          ./proxy/autofix.sh
+
+      - name: List prepared assets
+        run: |
+          find proxy -maxdepth 2 -type f | sort

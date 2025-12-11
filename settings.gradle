@@ -1,1 +1,6 @@
+plugins {
+    // Automatically resolves and downloads the requested Java toolchain (e.g., Adoptium JDK 17)
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.7.0'
+}
+
 rootProject.name = 'starfuncore-velocity'

@@ -25,3 +25,9 @@ replay_pid*
 .gradle/
 build/
 out/
+# Proxy automation outputs (binary artifacts kept local only)
+proxy/mods/
+proxy/plugins/
+proxy/maps/
+proxy/downloads/
+proxy/logs/
