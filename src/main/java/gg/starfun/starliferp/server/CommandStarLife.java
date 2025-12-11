@@ -5,9 +5,15 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ChatComponentText;
+
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Server-side /slr dispatcher using the vanilla CommandBase to match the
+ * Forge 1.7.10 ICommand binary signature (avoids AbstractMethodError when
+ * Mohist/Forge compares raw Object in compareTo).
+ */
 public class CommandStarLife extends CommandBase {
     @Override
     public String getCommandName() {
@@ -22,21 +28,6 @@ public class CommandStarLife extends CommandBase {
     @Override
     public List getCommandAliases() {
         return Collections.singletonList("starliferp");
-    }
-
-    @Override
-    public boolean canCommandSenderUseCommand(ICommandSender sender) {
-        return true;
-    }
-
-    @Override
-    public List addTabCompletionOptions(ICommandSender sender, String[] args) {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public boolean isUsernameIndex(String[] args, int index) {
-        return false;
     }
 
     @Override
@@ -61,4 +52,48 @@ public class CommandStarLife extends CommandBase {
         FMLNetworkHandler.openGui(player, null, id, player.worldObj, 0, 0, 0);
         player.addChatMessage(new ChatComponentText("§b[StarLifeRP] Menu: " + id));
     }
+
+    @Override
+    public boolean canCommandSenderUseCommand(ICommandSender sender) {
+        // StarLifeRP commands are intentionally open to all players for RP usage.
+        return true;
+    }
+
+    @Override
+    public List addTabCompletionOptions(ICommandSender sender, String[] args) {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public boolean isUsernameIndex(String[] args, int index) {
+        return false;
+    }
+
+    // Runtime SRG/obf compatibility: Mohist/Forge 1.7.10 servers call the
+    // obfuscated method names directly. We provide thin forwarders so the
+    // command works even without a ForgeGradle reobf pass.
+    public String func_71517_b() { // getCommandName
+        return getCommandName();
+    }
+
+    public String func_71518_a(ICommandSender sender) { // getCommandUsage
+        return getCommandUsage(sender);
+    }
+
+    public List func_71514_a(ICommandSender sender, String[] args) { // addTabCompletionOptions
+        return addTabCompletionOptions(sender, args);
+    }
+
+    public boolean func_71519_b(ICommandSender sender) { // canCommandSenderUseCommand
+        return canCommandSenderUseCommand(sender);
+    }
+
+    public boolean func_82358_a(String[] args, int index) { // isUsernameIndex
+        return isUsernameIndex(args, index);
+    }
+
+    public void func_71515_b(ICommandSender sender, String[] args) { // processCommand
+        processCommand(sender, args);
+    }
+
 }
