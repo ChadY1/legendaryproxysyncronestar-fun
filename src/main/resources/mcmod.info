@@ -1,0 +1,16 @@
+[
+  {
+    "modid": "starliferp",
+    "name": "StarLife RP GUI Pack",
+    "description": "Standalone StarLife roleplay GUIs convertis depuis SQript en un mod Forge 1.7.10 léger. Commandes: /slr (alias /starliferp) ouvre le hub; /slr atm, /slr id, /slr jobs, /slr police, /slr medic, /slr military sautent directement vers les interfaces dédiées. Client: configure la touche \"StarLife Menu\" pour ouvrir les écrans sans taper de commande. Les menus ATM gèrent dépôt/retrait/transfert, Identité génère passeport & plaques, Police/Médic/Militaire affichent outils RP, Jobs liste métiers, le tout via paquets réseau peu gourmands.",
+    "version": "1.0.0",
+    "mcversion": "1.7.10",
+    "authorList": ["StarLife Team"],
+    "credits": "Generated automatically for Mohist/Forge 1.7.10.",
+    "url": "https://github.com/ChadY1/legendaryproxysyncronestar-fun",
+    "updateUrl": "",
+    "logoFile": "",
+    "screenshots": [],
+    "parent": ""
+  }
+]

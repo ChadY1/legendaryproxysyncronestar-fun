@@ -1,0 +1,17 @@
+# ATM dépôts/retraits avec vérification de solde
+command /bank deposit <amount>:
+  if amount <= 0: stop with "Montant invalide"
+  if player.balance < amount: stop with "Solde insuffisant"
+  remove_money(player, amount)
+  add_bank_balance(player, amount)
+  send_message(player, "Dépôt de %amount% crédits. Nouveau solde en banque: %bank_balance(player)%")
+
+command /bank withdraw <amount>:
+  if amount <= 0: stop with "Montant invalide"
+  if bank_balance(player) < amount: stop with "Solde bancaire insuffisant"
+  add_money(player, amount)
+  remove_bank_balance(player, amount)
+  send_message(player, "Retrait de %amount% crédits. Nouveau solde: %bank_balance(player)%")
+
+command /bank balance:
+  send_message(player, "Solde ATM: %bank_balance(player)% | Poche: %player.balance%")
